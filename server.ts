@@ -352,25 +352,56 @@ You MUST return a JSON object with exactly these keys:
       }
     }
 
-    // If level is autonomous_action and drafts are missing, we run the Plan Z Agent (backend job)
-    if (level === 'autonomous_action' && (!task.draftRequestingMoreTime || !task.draftMinimumViablePlan)) {
+    // Helper to determine if drafts are missing or contain previous generation errors
+    const isDraftError = (d?: string) => {
+      if (!d) return true;
+      const lower = d.toLowerCase();
+      return lower.includes('facing high demand') || lower.includes('could not be generated') || lower.trim() === '';
+    };
+
+    const needsDraft = level === 'autonomous_action' && (
+      isDraftError(task.draftRequestingMoreTime) || 
+      isDraftError(task.draftMinimumViablePlan) || 
+      task.forceRegeneratePlanZ === true
+    );
+
+    if (needsDraft) {
+      // Clear forceRegeneratePlanZ so it's not persisted to db
+      delete task.forceRegeneratePlanZ;
       agentStatuses.planZAgent = `DRAFTING_PLAN_Z_FOR_${task.id}`;
       
-      const systemInstruction = `You are Planzie's Plan Z Agent. When tasks are critical, you write mitigation drafts.`;
+      const systemInstruction = `You are Planzie's senior Plan Z productivity strategist and expert workload controller. Your task is to produce exceptionally high-quality, practical, structured, and actionable plan mitigations when a user's task is in danger of failing its deadline.`;
       const prompt = `
-The user's task is severely delayed and has escalated.
+The user's task is severely delayed and has escalated to Plan Z status.
 Task details:
 - Title: ${task.title}
 - Category: ${task.category}
-- Effort: ${task.effort} hours
-- Percent Complete: ${task.percentComplete}%
-- Deadline: ${task.deadline}
+- Original Estimated Effort: ${task.effort} hours
+- Current Progress: ${task.percentComplete}%
+- Final Deadline: ${task.deadline}
 
-Generate two mitigation drafts in a JSON object with exactly these keys:
+Generate two highly-detailed mitigation assets in a single JSON object with exactly these keys:
 {
-  "requestingMoreTime": string (polite, respectful, human-sounding draft message requesting a deadline extension from a collaborator, client, or manager),
-  "minimumViablePlan": string (concise, bulleted backup plan detailing a simplified, absolute minimum viable version of this task that can be completed immediately to avoid total failure)
+  "requestingMoreTime": string,
+  "minimumViablePlan": string
 }
+
+Requirements for each key:
+
+1. "requestingMoreTime":
+   - Write a polite, highly professional, realistic, and human-sounding draft message requesting a deadline extension.
+   - It should be suitable to send to a collaborator, supervisor, client, or team leader.
+   - It must acknowledge the current progress, state the exact reason for the requested extension (based on category and title context), propose a realistic new timeline, and detail a clear plan to deliver the work.
+
+2. "minimumViablePlan":
+   - Write an incredibly structured, highly actionable, and extremely practical backup plan.
+   - It must focus on delivering the absolute minimum viable version of this task immediately to prevent complete failure.
+   - You MUST structure this text using clean Markdown.
+   - It MUST include:
+     - "### 📋 ACTION STEPS" (a numbered list of clear, ordered steps to get this done fast. Every single step must have a strict time estimate [e.g. "Time: 45m" or "Time: 1.5h"] and an individual priority level [e.g. "Priority: CRITICAL" or "Priority: HIGH"]).
+     - "### 🏁 MILESTONES & CHECKPOINTS" (clear progress indicators or checkpoint targets to verify velocity and completion).
+     - "### 💡 RECOMMENDATIONS" (highly specific, practical productivity hacks and actionable advice tailored directly to the task category and title context to help the user execute with maximum efficiency).
+   - Ensure the response is detailed, professional, and useful, avoiding any generic or simple one-line statements.
 `;
       try {
         const draftResponseText = await generateWithGemini(prompt, systemInstruction);

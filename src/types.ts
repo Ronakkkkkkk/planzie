@@ -24,6 +24,7 @@ export interface Task {
   draftRequestingMoreTime?: string;
   draftMinimumViablePlan?: string;
   draftApproved?: boolean;
+  forceRegeneratePlanZ?: boolean;
 }
 
 export interface Habit {

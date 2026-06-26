@@ -230,14 +230,14 @@ export function TaskCard({ task, onUpdate, onDelete }: TaskCardProps) {
             <div className="space-y-2 text-xs">
               <div>
                 <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider">Mitigation 1: Extension Draft</span>
-                <p className="bg-white border border-rose-100 p-2 rounded text-slate-700 italic leading-relaxed whitespace-pre-line font-mono text-[11px] max-h-24 overflow-y-auto">
+                <p className="bg-white border border-rose-100 p-2 rounded text-slate-700 italic leading-relaxed whitespace-pre-wrap font-mono text-[11px] max-h-48 overflow-y-auto">
                   {task.draftRequestingMoreTime || 'Drafting...'}
                 </p>
               </div>
 
               <div>
                 <span className="block text-[9px] font-bold text-slate-500 uppercase tracking-wider">Mitigation 2: Minimum Viable Version Plan</span>
-                <p className="bg-white border border-rose-100 p-2 rounded text-slate-700 italic leading-relaxed whitespace-pre-line font-mono text-[11px] max-h-24 overflow-y-auto">
+                <p className="bg-white border border-rose-100 p-2 rounded text-slate-700 italic leading-relaxed whitespace-pre-wrap font-mono text-[11px] max-h-48 overflow-y-auto">
                   {task.draftMinimumViablePlan || 'Drafting...'}
                 </p>
               </div>

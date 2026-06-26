@@ -5,7 +5,7 @@ import { Logo } from './components/Logo';
 import { TaskCard } from './components/TaskCard';
 import { HabitsSection } from './components/HabitsSection';
 import { FeedbackForm } from './components/FeedbackForm';
-import { AgentStatusBar } from './components/AgentStatusBar';
+import { PlanZMonitor } from './components/PlanZMonitor';
 import { Task } from './types';
 import { 
   LogOut, 
@@ -41,7 +41,8 @@ export default function App() {
   const [directDeadline, setDirectDeadline] = useState(''); // DD-MM-YYYY
   const [directEffort, setDirectEffort] = useState('1');
   const [directPriority, setDirectPriority] = useState<'High' | 'Medium' | 'Low'>('Medium');
-  const [directCategory, setDirectCategory] = useState('General');
+  const [categorySelect, setCategorySelect] = useState('General');
+  const [customCategory, setCustomCategory] = useState('');
   
   // Validation errors
   const [dateError, setDateError] = useState('');
@@ -223,7 +224,16 @@ export default function App() {
         setDirectDeadline(isoToDDMMYYYY(data.deadline) || '');
         setDirectEffort(String(data.effort || '1'));
         setDirectPriority(data.priority || 'Medium');
-        setDirectCategory(data.category || 'General');
+        
+        const extractedCat = data.category || 'General';
+        const standardCategories = ['General', 'Work', 'Personal', 'Health', 'Education', 'Finance'];
+        if (standardCategories.includes(extractedCat)) {
+          setCategorySelect(extractedCat);
+          setCustomCategory('');
+        } else {
+          setCategorySelect('Other');
+          setCustomCategory(extractedCat);
+        }
         
         // Auto switch to Direct tab so user can review & adjust
         setActiveTab('direct');
@@ -299,7 +309,7 @@ export default function App() {
           deadline: isoString,
           effort: Number(directEffort),
           priority: directPriority,
-          category: directCategory
+          category: categorySelect === 'Other' ? (customCategory.trim() || 'Other') : categorySelect
         })
       });
 
@@ -313,7 +323,8 @@ export default function App() {
         setDirectDeadline('');
         setDirectEffort('1');
         setDirectPriority('Medium');
-        setDirectCategory('General');
+        setCategorySelect('General');
+        setCustomCategory('');
         setIntakeText('');
         
         setSuccessMsg('Task added successfully!');
@@ -438,7 +449,7 @@ export default function App() {
                     setActiveTab('ai');
                     setSuccessMsg('');
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold uppercase tracking-wider transition border-b-2 ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold uppercase tracking-wider transition border-b-2 cursor-pointer ${
                     activeTab === 'ai' 
                       ? 'bg-white text-teal-700 border-b-teal-600' 
                       : 'text-slate-500 border-b-transparent hover:text-slate-800'
@@ -452,7 +463,7 @@ export default function App() {
                     setActiveTab('direct');
                     setSuccessMsg('');
                   }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold uppercase tracking-wider transition border-b-2 ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold uppercase tracking-wider transition border-b-2 cursor-pointer ${
                     activeTab === 'direct' 
                       ? 'bg-white text-teal-700 border-b-teal-600' 
                       : 'text-slate-500 border-b-transparent hover:text-slate-800'
@@ -493,7 +504,7 @@ export default function App() {
                       <button
                         type="submit"
                         disabled={intakeLoading || !intakeText.trim()}
-                        className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-lg shadow-sm transition"
+                        className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-lg shadow-sm transition cursor-pointer"
                       >
                         {intakeLoading ? (
                           <>
@@ -573,20 +584,46 @@ export default function App() {
 
                         <div className="space-y-1">
                           <label className="block text-xs font-bold uppercase text-slate-500 tracking-wider">Category</label>
-                          <input
-                            type="text"
-                            placeholder="Work, Health, etc."
-                            value={directCategory}
-                            onChange={(e) => setDirectCategory(e.target.value)}
-                            className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white transition"
-                            required
-                          />
+                          <select
+                            value={categorySelect}
+                            onChange={(e) => setCategorySelect(e.target.value)}
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white transition cursor-pointer"
+                          >
+                            <option value="General">General</option>
+                            <option value="Work">Work</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Health">Health</option>
+                            <option value="Education">Education</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Other">Other (Custom)</option>
+                          </select>
                         </div>
                       </div>
 
+                      <AnimatePresence>
+                        {categorySelect === 'Other' && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="space-y-1 mt-3 overflow-hidden"
+                          >
+                            <label className="block text-xs font-bold uppercase text-slate-500 tracking-wider">Custom Category Name</label>
+                            <input
+                              type="text"
+                              placeholder="Enter custom category (e.g. Hobby, Travel)"
+                              value={customCategory}
+                              onChange={(e) => setCustomCategory(e.target.value)}
+                              className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white transition"
+                              required
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
                       <button
                         type="submit"
-                        className="w-full bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-lg shadow-sm transition mt-2"
+                        className="w-full bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold uppercase tracking-wider py-3 px-4 rounded-lg shadow-sm transition mt-2 cursor-pointer"
                       >
                         Save Task
                       </button>
@@ -598,6 +635,9 @@ export default function App() {
 
             {/* Daily Habits tracker */}
             <HabitsSection />
+
+            {/* Plan Z Monitor */}
+            <PlanZMonitor tasks={tasks} onUpdateTask={handleTaskUpdate} />
 
             {/* Feedback Form */}
             <FeedbackForm />
@@ -669,9 +709,6 @@ export default function App() {
 
         </div>
       </main>
-
-      {/* Persistent Monospaced Status Indicator Bar */}
-      <AgentStatusBar />
     </div>
   );
 }
