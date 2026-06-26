@@ -17,7 +17,8 @@ import {
   CheckCircle2, 
   Compass, 
   ListPlus,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react';
 
 export default function App() {
@@ -49,6 +50,16 @@ export default function App() {
   const [directError, setDirectError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Auto-clear success message after 5 seconds
+  useEffect(() => {
+    if (successMsg) {
+      const timer = setTimeout(() => {
+        setSuccessMsg('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMsg]);
+
   // Auto-hyphen date formatter as user types DD-MM-YYYY
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value.replace(/[^0-9]/g, ''); // numbers only
@@ -65,6 +76,7 @@ export default function App() {
 
     setDirectDeadline(formatted);
     setDateError('');
+    setSuccessMsg('');
   };
 
   // Convert extracted ISO date back to DD-MM-YYYY
@@ -478,9 +490,19 @@ export default function App() {
               <div className="p-6 flex-1 flex flex-col justify-between">
                 <div>
                   {successMsg && (
-                    <div className="bg-teal-50 border border-teal-100 text-teal-800 text-xs rounded-lg p-3 mb-4 font-medium flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-teal-600" />
-                      <span>{successMsg}</span>
+                    <div className="bg-teal-50 border border-teal-100 text-teal-800 text-xs rounded-lg p-3 mb-4 font-medium flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                        <span>{successMsg}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSuccessMsg('')}
+                        className="text-teal-500 hover:text-teal-700 hover:bg-teal-100/50 p-1 rounded-full transition cursor-pointer shrink-0"
+                        aria-label="Dismiss success message"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   )}
 
@@ -491,7 +513,10 @@ export default function App() {
                         <textarea
                           placeholder="e.g. Finish chemistry presentation by tomorrow evening, takes about 3 hours. Category is school, priority is high."
                           value={intakeText}
-                          onChange={(e) => setIntakeText(e.target.value)}
+                          onChange={(e) => {
+                            setIntakeText(e.target.value);
+                            setSuccessMsg('');
+                          }}
                           className="w-full h-32 p-3 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white resize-none"
                           required
                         />
@@ -531,7 +556,10 @@ export default function App() {
                           type="text"
                           placeholder="What needs to be done?"
                           value={directTitle}
-                          onChange={(e) => setDirectTitle(e.target.value)}
+                          onChange={(e) => {
+                            setDirectTitle(e.target.value);
+                            setSuccessMsg('');
+                          }}
                           className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white transition"
                           required
                         />
@@ -561,7 +589,10 @@ export default function App() {
                             max="100"
                             placeholder="Hours"
                             value={directEffort}
-                            onChange={(e) => setDirectEffort(e.target.value)}
+                            onChange={(e) => {
+                              setDirectEffort(e.target.value);
+                              setSuccessMsg('');
+                            }}
                             className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white transition"
                             required
                           />
@@ -573,7 +604,10 @@ export default function App() {
                           <label className="block text-xs font-bold uppercase text-slate-500 tracking-wider">Priority</label>
                           <select
                             value={directPriority}
-                            onChange={(e) => setDirectPriority(e.target.value as any)}
+                            onChange={(e) => {
+                              setDirectPriority(e.target.value as any);
+                              setSuccessMsg('');
+                            }}
                             className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white transition"
                           >
                             <option value="High">High</option>
@@ -586,7 +620,10 @@ export default function App() {
                           <label className="block text-xs font-bold uppercase text-slate-500 tracking-wider">Category</label>
                           <select
                             value={categorySelect}
-                            onChange={(e) => setCategorySelect(e.target.value)}
+                            onChange={(e) => {
+                              setCategorySelect(e.target.value);
+                              setSuccessMsg('');
+                            }}
                             className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white transition cursor-pointer"
                           >
                             <option value="General">General</option>
@@ -613,7 +650,10 @@ export default function App() {
                               type="text"
                               placeholder="Enter custom category (e.g. Hobby, Travel)"
                               value={customCategory}
-                              onChange={(e) => setCustomCategory(e.target.value)}
+                              onChange={(e) => {
+                                setCustomCategory(e.target.value);
+                                setSuccessMsg('');
+                              }}
                               className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500 bg-slate-50 focus:bg-white transition"
                               required
                             />
