@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@utility banner-glow {
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+}
+
+@utility card-rose {
+  border-left: 4px solid #f43f5e;
+}
+
+@utility card-amber {
+  border-left: 4px solid #f59e0b;
+}
+
+@utility card-green {
+  border-left: 4px solid #10b981;
+}
+
+@utility card-slate {
+  border-left: 4px solid #64748b;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Planzie",
+  "description": "A smart full-stack productivity web app featuring task entry, daily habits with streak tracking, an AI-powered Intake Agent, Planner Agent, Recommendation Engine, and an Escalating Plan Z Agent.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
